@@ -53,7 +53,7 @@ app.get('/api/persons/:id', (request, response) => {
 
 
 // add a person
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
     const phone = new Phone({
         name: body.name,
@@ -67,10 +67,12 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    phone.save().then(result => {
+    phone.save()
+    .then(result => {
         console.log(`added ${body.name} number ${body.number} to phonebook`)
         response.json(phone)
     })
+    .catch(error => next(error))
 
 
 })
@@ -111,6 +113,9 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError'){
         return response.status(400).send({error: 'malformed id'})
+    }
+    else if(error.name === 'ValidationError'){
+        return response.status(400).json({error: error.message})
     }
     next(error)
 }
